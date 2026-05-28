@@ -53,7 +53,13 @@ The bot exposes the three main functions of the TTS model through intuitive comm
 5. **Start the server:**
    Start the FastAPI application (it commonly runs on port `8000`).
    ```bash
-   uvicorn src.cuentts.main:app --reload
+   uvicorn cuentts.main:app
+   ```
+   On startup you should see a green `cuentts started — bot @<your_bot>` line in the console. The TTS model loads lazily on the first generation request. If you instead see a red `BOT_TOKEN inválido` or `TELEGRAM_BOT_TOKEN no está definido`, fix your `.env` before continuing — every Telegram API call will return 404 until the token is valid.
+
+   **About `--reload`:** avoid it for normal use. `SessionManager` rewrites `sessions.json` on every state change, and `--reload` watches the whole working directory by default — each session save would trigger a reload and re-download the multi-GB TTS model. If you really want hot-reload while developing, scope it tightly:
+   ```bash
+   uvicorn cuentts.main:app --reload --reload-dir src/cuentts
    ```
 
 ## Telegram Webhook Configuration 🔗 (VERY IMPORTANT)
@@ -72,6 +78,12 @@ https://api.telegram.org/bot<YOUR_API_TOKEN>/setWebhook?url=<YOUR_NGROK_URL>/web
 ```
 
 You should see a response like `{"ok":true,"result":true,"description":"Webhook was set"}`.
+
+### Troubleshooting 🩺
+
+- **`POST /webhook 200 OK` followed by `<Response [404]>` in the console.** This means FastAPI received the update fine, but the call back to `api.telegram.org` returned 404 — almost always an invalid `TELEGRAM_BOT_TOKEN`. With the current logging you'll now see the actual body (e.g. `{"ok":false,"error_code":404,"description":"Not Found"}`). Double-check `.env`: the value must be the raw token from @BotFather (`123456:ABC-DEF...`), without quotes or trailing spaces.
+- **Browser hits to `/webhook` give 405.** That's expected: only `POST` is registered. Use `GET /` for a quick health-check; it should return `{"status":"ok","service":"cuentts"}`.
+- **Telegram doesn't reach the bot at all.** Make sure the URL passed to `setWebhook` ends exactly in `/webhook` (no trailing slash) and that ngrok is still running on the same URL you registered.
 
 ## Commands Usage 💬
 
