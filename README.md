@@ -1,89 +1,105 @@
 # Cuentts - Telegram TTS Bot
 
-Un bot de Telegram avanzado impulsado por el modelo [Qwen3-TTS](https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice) y construido con **FastAPI**. Te permite interactuar directamente desde Telegram para generar voces de texto a voz, crear voces personalizadas (voice design), o clonar tu propia voz paso a paso.
+![Python](https://img.shields.io/badge/Python-3.13%2B-blue?logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-Framework-009688?logo=fastapi&logoColor=white)
+![PyTorch](https://img.shields.io/badge/PyTorch-2.11%20cu128-EE4C2C?logo=pytorch&logoColor=white)
+![Qwen](https://img.shields.io/badge/Model-Qwen3--TTS-purple?logo=huggingface&logoColor=white)
+![uv](https://img.shields.io/badge/uv-Blazing_Fast-magenta?logo=python)
 
-## Características 🌟
-El bot expone las tres funciones principales del modelo TTS mediante comandos intuitivos:
+An advanced Telegram bot powered by the [Qwen3-TTS](https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice) model and built with **FastAPI**. It allows you to interact directly from Telegram to generate text-to-speech voices, create custom voices (voice design), or clone your own voice step by step.
 
-- **Generación Básica**: Usa voces preentrenadas (Vivian, Serena, Uncle_Fu, Dylan, etc.).
-- **Diseño de Voz**: Describe el tipo de voz que quieres (ej: "voz aguda de locutor", "tono feliz") y obtén un audio personalizado.
-- **Clonación de Voz**: Permite mandar un mensaje de voz, su transcripción, y un texto objetivo para que el modelo hable con la voz clonada del audio.
+**Repository:** [https://github.com/anmerino-pnd/cuentts](https://github.com/anmerino-pnd/cuentts)
 
-## Requisitos 🛠️
+## Features 🌟
+The bot exposes the three main functions of the TTS model through intuitive commands:
+
+- **Basic Generation**: Use pre-trained voices (Vivian, Serena, Uncle_Fu, Dylan, etc.).
+- **Voice Design**: Describe the type of voice you want (e.g., "high-pitched radio host voice", "happy tone") and get a custom audio.
+- **Voice Cloning**: Send a voice message, its transcription, and a target text to make the model speak with the cloned voice from your audio.
+
+## Requirements 🛠️
 - Python >= 3.13
-- Token de la API de tu bot de Telegram (obtenido a través de [@BotFather](https://t.me/BotFather))
-- ngrok (o cualquier otro servicio para exponer puertos locales, a menos que despliegues en la nube)
+- Telegram Bot API Token (obtained via [@BotFather](https://t.me/BotFather))
+- ngrok (or any other service to expose local ports, unless you deploy in the cloud)
+- [uv](https://github.com/astral-sh/uv) package manager (recommended for fast dependency resolution)
 
-## Instalación y Ejecución 🚀
+## Installation & Setup 🚀
 
-1. **Clona el repositorio:**
+1. **Clone the repository:**
    ```bash
-   git clone <url-de-tu-repo>
+   git clone https://github.com/anmerino-pnd/cuentts.git
    cd cuentts
    ```
 
-2. **Instala las dependencias:**
-   Puedes instalarlo usando el archivo `pyproject.toml` (o con `uv` si lo prefieres):
+2. **Install dependencies:**
+   We use `uv` for blazing-fast package management. First, install the base dependencies:
    ```bash
-   pip install -e .
+   uv pip install -e .
    ```
 
-3. **Variables de Entorno:**
-   Asegúrate de crear un archivo `.env` en la raíz del proyecto y añadir el token de tu bot de Telegram:
+3. **Install PyTorch with CUDA support (Crucial Step):**
+   To ensure the model runs efficiently on your GPU (as noted in the project notebooks), you must install the specific PyTorch version with CUDA 12.8 support. Run the following `uv` commands:
+   ```bash
+   uv pip uninstall torch torchvision torchaudio
+   uv pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
+   ```
+
+4. **Environment Variables:**
+   Create a `.env` file in the root of the project and add your Telegram bot token:
    ```env
-   TELEGRAM_BOT_TOKEN=tu_token_aqui
+   TELEGRAM_BOT_TOKEN=your_token_here
    ```
 
-4. **Inicia el servidor:**
-   Inicia la aplicación FastAPI (asegúrate de saber en qué puerto se levanta, comúnmente el `8000`).
+5. **Start the server:**
+   Start the FastAPI application (it commonly runs on port `8000`).
    ```bash
    uvicorn src.cuentts.main:app --reload
    ```
 
-## Configuración del Webhook de Telegram 🔗 (MUY IMPORTANTE)
+## Telegram Webhook Configuration 🔗 (VERY IMPORTANT)
 
-Para que Telegram sepa a dónde enviar los mensajes que recibe el bot, **debes configurar el webhook**. 
+For Telegram to know where to send the messages your bot receives, **you must configure the webhook**. 
 
-Si estás probando el bot de manera local, primero usa `ngrok` para exponer tu puerto:
+If you are testing the bot locally, first use `ngrok` to expose your port:
 ```bash
 ngrok http 8000
 ```
 
-Ngrok te dará una URL (ej: `https://<YOUR_NGROK_URL>.ngrok-free.app`). Con esa URL, visita el siguiente enlace en tu navegador web para registrar el webhook con Telegram (asegúrate de reemplazar los campos de `<YOUR_API_TOKEN>` y `<YOUR_NGROK_URL>`):
+Ngrok will give you a URL (e.g., `https://<YOUR_NGROK_URL>.ngrok-free.app`). Using that URL, visit the following link in your web browser to register the webhook with Telegram (make sure to replace the `<YOUR_API_TOKEN>` and `<YOUR_NGROK_URL>` fields):
 
 ```
 https://api.telegram.org/bot<YOUR_API_TOKEN>/setWebhook?url=<YOUR_NGROK_URL>/webhook
 ```
 
-Deberías ver una respuesta como `{"ok":true,"result":true,"description":"Webhook was set"}`.
+You should see a response like `{"ok":true,"result":true,"description":"Webhook was set"}`.
 
-## Uso de los Comandos 💬
+## Commands Usage 💬
 
 ### `/generate`
-Genera un audio utilizando una de las voces base del modelo.
-**Uso:** `/generate [speaker] [texto] | [instrucción opcional]`
-**Voces válidas:** Vivian, Serena, Uncle_Fu, Dylan, Eric, Ryan, Aiden, Ono_Anna, Sohee.
-**Ejemplo:**
+Generates an audio using one of the model's base voices.
+**Usage:** `/generate [speaker] [text] | [optional instruction]`
+**Valid voices:** Vivian, Serena, Uncle_Fu, Dylan, Eric, Ryan, Aiden, Ono_Anna, Sohee.
+**Example:**
 ```text
-/generate Vivian Hola, soy Vivian y te hablo desde Telegram | Habla muy rápido y alegre
+/generate Vivian Hello, I am Vivian and I am speaking from Telegram | Speak very fast and happily
 ```
 
 ### `/design`
-Diseña una voz desde cero proporcionando una descripción.
-**Uso:** `/design [descripción/prompt] | [texto]`
-**Ejemplo:**
+Designs a voice from scratch by providing a description.
+**Usage:** `/design [description/prompt] | [text]`
+**Example:**
 ```text
-/design Voz de hombre mayor hablando como en la radio | Bienvenidos a la transmisión del día de hoy
+/design Voice of an older man speaking like on the radio | Welcome to today's broadcast
 ```
 
 ### `/clone`
-Un flujo guiado paso a paso para clonar una voz de referencia.
-1. Envía el comando `/clone` en el chat.
-2. El bot te pedirá que le mandes un **audio o mensaje de voz**.
-3. Una vez enviado y procesado, te pedirá que mandes un texto con la **transcripción exacta** de lo que se dice en ese audio.
-4. Finalmente, te pedirá que le mandes **el nuevo texto que quieres generar** (puedes anexar de manera opcional una instrucción al final separada por el símbolo `|`).
-5. ¡Recibirás tu audio clonado!
+A guided step-by-step flow to clone a reference voice.
+1. Send the `/clone` command in the chat.
+2. The bot will ask you to send an **audio or voice message**.
+3. Once sent and processed, it will ask you to send a text with the **exact transcription** of what is said in that audio.
+4. Finally, it will ask you to send **the new text you want to generate** (you can optionally append an instruction at the end separated by the `|` symbol).
+5. You will receive your cloned audio!
 
 ---
 
-*Desarrollado con ❤️ para cuentts*
+*Developed with ❤️ for cuentts*
