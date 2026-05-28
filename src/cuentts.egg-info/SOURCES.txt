@@ -1,0 +1,10 @@
+LICENSE
+pyproject.toml
+src/cuentts/__init__.py
+src/cuentts/main.py
+src/cuentts.egg-info/PKG-INFO
+src/cuentts.egg-info/SOURCES.txt
+src/cuentts.egg-info/dependency_links.txt
+src/cuentts.egg-info/entry_points.txt
+src/cuentts.egg-info/requires.txt
+src/cuentts.egg-info/top_level.txt

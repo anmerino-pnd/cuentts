@@ -1,0 +1,7 @@
+accelerate>=1.12.0
+qwen-tts>=0.1.1
+soundfile>=0.13.1
+torch
+torchaudio
+torchvision
+transformers==4.57.6
